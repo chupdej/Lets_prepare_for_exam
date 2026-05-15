@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCC Quiz — QAB Rules & Regulations</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Sarabun', sans-serif;
+    background: linear-gradient(135deg, #6e3b89 0%, #4a1f73 100%);
+    min-height: 100vh;
+    padding: 16px;
+    color: #1a1a1a;
+  }
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  header {
+    background: linear-gradient(135deg, #5b2a8a 0%, #3d1761 100%);
+    color: white;
+    padding: 24px 28px;
+  }
+  header h1 { font-size: 1.5rem; margin-bottom: 6px; }
+  header .sub { opacity: 0.85; font-size: 0.95rem; }
+  .stats {
+    display: flex;
+    gap: 16px;
+    padding: 16px 28px;
+    background: #faf7fc;
+    border-bottom: 1px solid #e9e2ef;
+    flex-wrap: wrap;
+  }
+  .stat {
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+  }
+  .stat .num {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #5b2a8a;
+  }
+  .stat .num.correct { color: #2e7d32; }
+  .stat .num.wrong { color: #c62828; }
+  .stat .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #666;
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+  .progress-wrap {
+    padding: 0 28px 16px;
+    background: #faf7fc;
+  }
+  .progress-bar {
+    height: 8px;
+    background: #e9e2ef;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #5b2a8a, #c294e3);
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+  main { padding: 28px; }
+  .question-card {
+    animation: slideIn 0.4s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .qnum {
+    display: inline-block;
+    background: #5b2a8a;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .qnum.hard { background: #d84315; }
+  .subj-tag {
+    display: inline-block;
+    background: #f0e6f6;
+    color: #5b2a8a;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+  .question {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: #1a1a1a;
+  }
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 2px solid #e0d6e8;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: #1a1a1a;
+  }
+  .choice:hover:not(:disabled) {
+    border-color: #5b2a8a;
+    background: #faf7fc;
+    transform: translateX(2px);
+  }
+  .choice:disabled { cursor: default; }
+  .choice .letter {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e9e2ef;
+    color: #5b2a8a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .choice.correct {
+    border-color: #2e7d32;
+    background: #e8f5e9;
+  }
+  .choice.correct .letter {
+    background: #2e7d32;
+    color: white;
+  }
+  .choice.wrong {
+    border-color: #c62828;
+    background: #ffebee;
+  }
+  .choice.wrong .letter {
+    background: #c62828;
+    color: white;
+  }
+  .feedback {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .feedback.show { display: block; }
+  .feedback.correct {
+    background: #e8f5e9;
+    border-left: 4px solid #2e7d32;
+    color: #1b5e20;
+  }
+  .feedback.wrong {
+    background: #ffebee;
+    border-left: 4px solid #c62828;
+    color: #b71c1c;
+  }
+  .feedback strong { display: block; margin-bottom: 4px; font-size: 0.95rem; }
+  .feedback .ans { font-size: 0.95rem; line-height: 1.5; }
+  .controls {
+    margin-top: 24px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  button.btn {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: #5b2a8a;
+    color: white;
+  }
+  .btn-primary:hover { background: #3d1761; transform: translateY(-1px); }
+  .btn-primary:disabled { background: #b8a4cc; cursor: not-allowed; transform: none; }
+  .btn-secondary {
+    background: #f0e6f6;
+    color: #5b2a8a;
+  }
+  .btn-secondary:hover { background: #e0d0ee; }
+  .end-screen {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .end-screen h2 { color: #5b2a8a; font-size: 1.8rem; margin-bottom: 12px; }
+  .end-score {
+    font-size: 4rem;
+    font-weight: 700;
+    color: #5b2a8a;
+    margin: 20px 0;
+  }
+  .end-message {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 24px;
+  }
+  .end-screen .controls { justify-content: center; }
+  footer {
+    text-align: center;
+    padding: 16px;
+    background: #faf7fc;
+    color: #888;
+    font-size: 0.8rem;
+    border-top: 1px solid #e9e2ef;
+  }
+  @media (max-width: 600px) {
+    body { padding: 8px; }
+    main { padding: 20px; }
+    header { padding: 20px; }
+    header h1 { font-size: 1.25rem; }
+    .question { font-size: 1rem; }
+    .choice { padding: 12px 14px; font-size: 0.92rem; }
+    .stats { padding: 12px 20px; gap: 8px; }
+    .stat .num { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>SCC Quiz — QAB Rules & Regulations</h1>
+    <div class="sub">วิชา Rules and Regulations — รวม <span id="totalQ">0</span> ข้อ</div>
+  </header>
+  <div class="stats">
+    <div class="stat"><div class="num" id="curNum">0</div><div class="label">ข้อปัจจุบัน</div></div>
+    <div class="stat"><div class="num correct" id="correctNum">0</div><div class="label">ถูก</div></div>
+    <div class="stat"><div class="num wrong" id="wrongNum">0</div><div class="label">ผิด</div></div>
+    <div class="stat"><div class="num" id="scoreNum">0%</div><div class="label">คะแนน</div></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+  </div>
+  <main id="main"></main>
+  <footer>เฉลยและคะแนนแสดงทันทีหลังเลือกแต่ละข้อ • ทำซ้ำได้ไม่จำกัด</footer>
+</div>
+
+<script>
+const QUESTIONS = [{"n": 1, "q": "Which function is responsible for managing and controlling the database and storage system for the cabin crew?", "a": "QA-B", "b": "DQ", "c": "QB-A", "d": "DQ-1", "correct": "A"}, {"n": 2, "q": "What does AOCR stand for in the CCH section of abbreviations and definitions?", "a": "Air Operator Crew Resource", "b": "Air Operator Control Reference", "c": "Air Operator Control Resource", "d": "Air Operator Certificate Requirements", "correct": "D"}, {"n": 3, "q": "What does COMIS stand for in the CCH section of abbreviations and definitions?", "a": "Cabin Operation Manual List", "b": "Cabin Operation Management List", "c": "Crew Online Management Information System", "d": "Crew Operation Manual Indicated Safety", "correct": "C"}, {"n": 4, "q": "What does FCOM stand for?", "a": "First Class Operation Manual", "b": "First Class Operating Manual", "c": "Flight Crew Operating Manual", "d": "Flight Crew Operate Management", "correct": "C"}, {"n": 5, "q": "What does MAAS stand for?", "a": "Manual Aircraft Announcement System", "b": "Manual Aircraft Address Symbol", "c": "Meet And Assist All Stations", "d": "Meet And Assist", "correct": "D"}, {"n": 6, "q": "What does NOTOC stand for in the CCH section of abbreviations and definitions?", "a": "Number Of Trainee On Call", "b": "Notification To Captain", "c": "Notification Of Telex On Call", "d": "No Operation On C Class", "correct": "B"}, {"n": 7, "q": "What does PHM stand for in the CCH section of abbreviations and definitions?", "a": "Passenger Handbook Manual", "b": "Passenger Handle Manual", "c": "Passenger Handling Manual", "d": "Passenger Service Handbook", "correct": "C"}, {"n": 8, "q": "Which one is not on levels of penalty in CCH 2.5?", "a": "Written warning", "b": "Reprimand", "c": "Salary deduction", "d": "Employment termination", "correct": "B"}, {"n": 9, "q": "If a cabin crew member is found to have a BMI that exceeds the criteria, the crew member must improve the BMI to achieve the requirement within ___ days. (CCH 2.7)", "a": "30", "b": "45", "c": "60", "d": "90", "correct": "C"}, {"n": 10, "q": "When not on duty, cabin crew report to___", "a": "DO", "b": "DQ", "c": "QA", "d": "OP-1", "correct": "C"}, {"n": 11, "q": "What is the code for LATE ACTIVITY? (CCH 2.3.1)", "a": "L11", "b": "L12", "c": "L13", "d": "L18", "correct": "B"}, {"n": 12, "q": "What is the code for STANDBY UNAVAILABLE? (CCH 2.3.1)", "a": "L11", "b": "L12", "c": "L13", "d": "L18", "correct": "C"}, {"n": 13, "q": "What is the code for REFUSED TO FLY? (CCH 2.3.1)", "a": "L18", "b": "L19", "c": "L20", "d": "L21", "correct": "A"}, {"n": 14, "q": "What is the code for SICK AFTER CHECK-IN? (CCH 2.3.1)", "a": "L18", "b": "L19", "c": "L20", "d": "L21", "correct": "B"}, {"n": 15, "q": "What is the code for MISSED FLIGHT AT LINE STATION? (CCH 2.3.1)", "a": "L18", "b": "L19", "c": "L20", "d": "L21", "correct": "D"}, {"n": 16, "q": "What is the code for SICK STANDBY? (CCH 2.3.1)", "a": "L21", "b": "L22", "c": "L23", "d": "L24", "correct": "C"}, {"n": 17, "q": "What is the code for DIRECT TO AIRCRAFT? (CCH 2.3.1)", "a": "L21", "b": "L22", "c": "L23", "d": "L24", "correct": "D"}, {"n": 18, "q": "What is the code for SICK AFTER ASSIGNED FLIGHT WITHIN 24 HRS. BEFORE SCHEDULED DEPARTURE TIME? (CCH Bulletin01/2023)", "a": "L24", "b": "L25", "c": "L26", "d": "L27", "correct": "B"}, {"n": 19, "q": "What is the code for SICK LESS THAN 3 HOURS BEFORE SCHEDULED DEPARTURE TIME? (CCH 2.3.1)", "a": "L28", "b": "L29", "c": "L30", "d": "L31", "correct": "A"}, {"n": 20, "q": "What is the code for MISSED BRIEFING? (CCH 2.3.1)", "a": "L30", "b": "L31", "c": "L32", "d": "L33", "correct": "C"}, {"n": 21, "q": "What is the code for MISSED CHECK-IN? (CCH 2.3.1)", "a": "L30", "b": "L31", "c": "L32", "d": "L33", "correct": "D"}, {"n": 22, "q": "What is the code for FAILURE TO UPDATE DOCUMENTS? (CCH 2.3.1)", "a": "L70", "b": "L71", "c": "L72", "d": "L73", "correct": "B"}, {"n": 23, "q": "What is the code for INCOMPLETE DOCUMENT? (CCH 2.3.1)", "a": "L70", "b": "L71", "c": "L72", "d": "L73", "correct": "D"}, {"n": 24, "q": "A cabin crew must verify their own absence history and penalty codes (if applicable) by accessing the ICARE system and contact QA-B to settle the case by themselves within ___ days.", "a": "15", "b": "30", "c": "45", "d": "60", "correct": "B"}, {"n": 25, "q": "What is the code for INFLIGHT COMMENDATION? (CCH 2.3.2)", "a": "L95", "b": "L96", "c": "L97", "d": "L98", "correct": "C"}, {"n": 26, "q": "What is the code for DIRECT COMMENDATION? (CCH 2.3.2)", "a": "L95", "b": "L96", "c": "L97", "d": "L98", "correct": "D"}, {"n": 27, "q": "What is the code for MATERNITY LEAVE (WITH PAY)? (CCH Bulletin01/2023)", "a": "Z41", "b": "Z51", "c": "Z61", "d": "Z71", "correct": "D"}, {"n": 28, "q": "Upon her delivery date, female cabin crew must inform QA immediately or within___ days by phone. (CCH Bulletin01/2023)", "a": "3", "b": "5", "c": "7", "d": "14", "correct": "B"}, {"n": 29, "q": "What is the code for PRIESTHOOD LEAVE? (CCH 2.3.3)", "a": "Z71", "b": "Z81", "c": "Z91", "d": "Z93", "correct": "C"}, {"n": 30, "q": "The requisition period for Priesthood Leave (male) should not exceed ____ days. (CCH 2.3.3)", "a": "90", "b": "120", "c": "180", "d": "210", "correct": "B"}, {"n": 31, "q": "A buddhist female cabin crew may also request for religious ascetic leave up to___days? (CCH 2.3.3)", "a": "90", "b": "120", "c": "180", "d": "210", "correct": "A"}, {"n": 32, "q": "A Muslim cabin crew who has been working with THAI for 2 years and has never performed Muslim Pilgrimage (Hajj) may apply for a leave which the requisition should not exceed ____ days. (CCH 2.3.3)", "a": "90", "b": "120", "c": "180", "d": "210", "correct": "B"}, {"n": 33, "q": "What is the code for Temporary Off Duty/ Pending Approval?", "a": "L33", "b": "L34", "c": "L35", "d": "L36", "correct": "B"}, {"n": 34, "q": "If the penalty of cabin crew involves a salary deduction, a copy of letter must be sent by QA-B to which function? (CCH 2.5)", "a": "DO", "b": "DE", "c": "3B-C", "d": "DI-B", "correct": "D"}, {"n": 35, "q": "In the event of violation that is not severe enough to result in a salary deduction, the staff will be suspended without pay for no more than___days. (CCH 2.5)", "a": "5", "b": "7", "c": "14", "d": "21", "correct": "B"}, {"n": 36, "q": "All crew members must hold a passport validity of at least ____days before leaving the country.", "a": "90", "b": "120", "c": "150", "d": "180", "correct": "D"}, {"n": 37, "q": "What kind of special meal can the cabin crew not request?", "a": "LCML (Low-Calorie Meal)", "b": "LFML (Low-Fat Meal)", "c": "FPML (Fruit Platter Meal)", "d": "SPML (Specific Special Meal) for food allergies such as allergy to peanuts, etc.", "correct": "C"}, {"n": 38, "q": "Any changes made to the details on a passport must be notified to OP-1 in an appropriate time which is ____ hours for the flight to Australia.", "a": "24", "b": "48", "c": "72", "d": "96", "correct": "B"}, {"n": 39, "q": "Which item is not allowed to be kept in carry-on baggage?", "a": "Lighters", "b": "35 Surgical masks", "c": "Power bank 20,000 mAh", "d": "Alcohol spray 90 ML", "correct": "A"}, {"n": 40, "q": "Crew checked baggage is allowed to load with the weight that should not exceed___kilograms.", "a": "15", "b": "18", "c": "20", "d": "24", "correct": "C"}, {"n": 41, "q": "According to the ____ special meal codes, SPML can be ordered only for health and religious reasons. (CCH Bulletin01/ 2023)", "a": "ICAO", "b": "IATA", "c": "AOCR", "d": "FAA", "correct": "B"}, {"n": 42, "q": "Which is FALSE statement regarding garment bag? (CCGG 69/REV.7)", "a": "Keychain is not allowed on garment bag", "b": "Only one keychain is allowed (not exceed 10x10 cm)", "c": "Garment bag size must not exceed 27x47x4 inches", "d": "Garment bag can be embroidered with cabin crew", "correct": "A"}, {"n": 43, "q": "Reimbursement of the physical examination charge must be submitted no later than___days after after the issuance date. (CCH 2.6)", "a": "120", "b": "140", "c": "160", "d": "180", "correct": "D"}, {"n": 44, "q": "According to CCH, The Traffic Light System shall be used as an assessment tool for___ (CCH 4.9.6)", "a": "Call light system", "b": "Intoxicated passenger", "c": "Sick passenger", "d": "Bomb search", "correct": "B"}, {"n": 45, "q": "According to Social Security, what risks are covered among members, including cabin crew member? (CCH 4.2)", "a": "Risk of financial loss", "b": "Risk of travel mishaps", "c": "Risk of sickness, childbirth, disability, death, child allowance, old age and unemployment", "d": "Risk of capital loss", "correct": "C"}, {"n": 46, "q": "When does the cabin crew need to submit health check-up documents ? (CCH 2.6.3)", "a": "Every month", "b": "Before 23.59 Bangkok local time on the 25th of the birthday month", "c": "After completing a flight", "d": "Only during emergencies", "correct": "B"}, {"n": 47, "q": "What function is concerned with cabin crew welfare and benefits? (CCH 4.2)", "a": "QA", "b": "AB-A", "c": "IS-B", "d": "GA-A", "correct": "C"}, {"n": 48, "q": "When is a cabin crew entitled to Z81 PERSONAL LEAVE? (CCH 2.3)", "a": "For athletic events representation", "b": "For religious purposes", "c": "For marriage or family matters", "d": "For duties other than flight duties", "correct": "C"}, {"n": 49, "q": "If CA Kimberly would like to know the right position to pin the Wings Name Badge, which manual contains the guidelines?", "a": "PSM", "b": "CCGI", "c": "CCM", "d": "CCGG", "correct": "D"}, {"n": 50, "q": "Which of the following sentence is relevant to Wings Name Badge? (CCGG 65/ REV.7)", "a": "Wings Name Badge provided by the company must be worn", "b": "Wings Name Badge must be pinned on the left chest of female crew for Thai dress/uniform jacket/apron.", "c": "Wings Name Badge must be pinned above the top-left pocket of the uniform jacket/serving jacket.", "d": "All are correct", "correct": "D"}, {"n": 51, "q": "Which sentence is NOT correct? (CCGG REV.7)", "a": "The Cabin Crew Grooming Guidance is provided in electronic format only", "b": "The Cabin Crew Grooming Guidance can access via MDM Content mobile application", "c": "The Cabin Crew Grooming Guidance is specifically prepared to facilitate the conducts and the guidelines of cabin crew personal appearance as the frontline staff in order to minimize passenger satisfaction", "d": "The purpose of the CCGG is to achieve the THAI identity and company", "correct": "C"}, {"n": 52, "q": "Cabin crew on active duty must wear a complete uniform in public view. Any special cases regarding health must be approved by___(CCGG 2/REV.7)", "a": "QA-A", "b": "QA", "c": "QA-B", "d": "QB", "correct": "B"}, {"n": 53, "q": "What are the BMI (Body Mass Index) limitations for TG cabin crew? (CCGG 4/ REV.7)", "a": "Female shall not exceed 25 and male shall not exceed 27.5", "b": "Female shall be 25 and male shall be 27", "c": "Female shall not exceed 27.5 and male shall not exceed 25", "d": "Female shall not exceed 25.5 and male shall not exceed 27.5", "correct": "A"}, {"n": 54, "q": "Company is responsible for expense in case of loss or damage of CA's uniform baggage due to__(CCGG 68/ REV.7)", "a": "left unattended for an unreasonably long period of time at hotel", "b": "lost or damaged while off duty", "c": "lost in a vehicle not provided by company", "d": "CA were requested for Direct to Aircraft and loaded their baggage later than others", "correct": "D"}, {"n": 55, "q": "Which lipsticks are not allowed? (CCGG 11.3/ REV.7)", "a": "Extremely pale", "b": "Lip gloss only", "c": "Nude", "d": "All are correct", "correct": "D"}, {"n": 56, "q": "Which nail polish tone is allowed? (CCGG 12.1/REV.7)", "a": "Nude shade", "b": "Clear or White shade", "c": "Dark shade", "d": "Neon/ Fluorescent", "correct": "A"}, {"n": 57, "q": "Which sentence is TRUE regarding female short/ medium hairstyle? (CCGG 13/ REV.7)", "a": "The length of bob haircut are permitted to extend to the base of the blouse collar", "b": "Extremely curly hairstyles are acceptable", "c": "Braids and cornrows can be worn with the hair bun", "d": "Clean and well-groomed boyish style is allowed", "correct": "A"}, {"n": 58, "q": "Which sentence is NOT correct regarding female long hairstyle? (CCGG 13/ REV.7)", "a": "The bun must be positioned between 12:30 o'clock and 5 o'clock when view from the left profile", "b": "A very high big bun, and inverted bun, a French twist and a braided are acceptable", "c": "A hairnet must be in plain black or dark brown mesh without any ornaments", "d": "A wig or hairpiece maybe worn for cabin crew who has an allergic condition", "correct": "B"}, {"n": 59, "q": "Which of the following sentence is correct? (CCGG 73/REV.7)", "a": "The eyeglasses must not be worn at the airport", "b": "The eyeglasses must not be worn in the cabin (during drink and meal service)", "c": "The frame of the glasses must be in a conservative style and color", "d": "All are correct", "correct": "D"}, {"n": 60, "q": "Which one is NOT correct regarding male cabin crew hairstyles? (CCGG 42/ REV.7)", "a": "The hair must not cover any part of the ears, and must not touch the collar", "b": "Sideburns must not be lower than the middle part of the ears", "c": "The hair length must be shorter than 2 or 3 grade clipper-guard", "d": "Wet look hair texture is allowed", "correct": "C"}];
+const IS_HARD = false;
+
+let order = [];
+let cur = 0;
+let correctCount = 0;
+let wrongCount = 0;
+let answered = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  order = shuffle(QUESTIONS.map((_, i) => i));
+  cur = 0;
+  correctCount = 0;
+  wrongCount = 0;
+  document.getElementById('totalQ').textContent = QUESTIONS.length;
+  renderQuestion();
+}
+
+function updateStats() {
+  document.getElementById('curNum').textContent = cur + 1;
+  document.getElementById('correctNum').textContent = correctCount;
+  document.getElementById('wrongNum').textContent = wrongCount;
+  const total = correctCount + wrongCount;
+  const pct = total === 0 ? 0 : Math.round((correctCount / total) * 100);
+  document.getElementById('scoreNum').textContent = pct + '%';
+  document.getElementById('progFill').style.width = ((cur) / QUESTIONS.length * 100) + '%';
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderQuestion() {
+  if (cur >= QUESTIONS.length) { renderEnd(); return; }
+  answered = false;
+  const q = QUESTIONS[order[cur]];
+  updateStats();
+  const subjTag = (IS_HARD && q.subject) ? `<span class="subj-tag">${escapeHtml(q.subject.split('_')[0])}</span>` : '';
+  const qNumCls = IS_HARD ? 'qnum hard' : 'qnum';
+  const html = `
+    <div class="question-card">
+      <div>
+        <span class="${qNumCls}">ข้อ ${cur + 1} / ${QUESTIONS.length}</span>
+        ${subjTag}
+      </div>
+      <div class="question" style="margin-top: 12px;">${escapeHtml(q.q)}</div>
+      <div class="choices">
+        ${['A','B','C','D'].map(letter => `
+          <button class="choice" data-letter="${letter}" onclick="selectAnswer('${letter}')">
+            <span class="letter">${letter}</span>
+            <span>${escapeHtml(q[letter.toLowerCase()])}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <div class="controls">
+        <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>ข้อถัดไป →</button>
+        <button class="btn btn-secondary" onclick="restartQuiz()">เริ่มใหม่ (สุ่มใหม่)</button>
+      </div>
+    </div>`;
+  document.getElementById('main').innerHTML = html;
+}
+
+function selectAnswer(letter) {
+  if (answered) return;
+  answered = true;
+  const q = QUESTIONS[order[cur]];
+  const isCorrect = letter === q.correct;
+  if (isCorrect) correctCount++; else wrongCount++;
+  
+  // Disable all choices, mark correct one green
+  document.querySelectorAll('.choice').forEach(btn => {
+    btn.disabled = true;
+    const l = btn.dataset.letter;
+    if (l === q.correct) btn.classList.add('correct');
+    else if (l === letter) btn.classList.add('wrong');
+  });
+  
+  // Feedback box
+  const fb = document.getElementById('feedback');
+  const correctText = q[q.correct.toLowerCase()];
+  if (isCorrect) {
+    fb.className = 'feedback correct show';
+    fb.innerHTML = `<strong>✓ ถูกต้อง!</strong><div class="ans">คำตอบ: ${q.correct}. ${escapeHtml(correctText)}</div>`;
+  } else {
+    fb.className = 'feedback wrong show';
+    fb.innerHTML = `<strong>✗ ผิด</strong><div class="ans">คำตอบที่ถูกคือ: ${q.correct}. ${escapeHtml(correctText)}</div>`;
+  }
+  document.getElementById('nextBtn').disabled = false;
+  updateStats();
+}
+
+function nextQuestion() {
+  cur++;
+  renderQuestion();
+}
+
+function restartQuiz() {
+  if (confirm('เริ่มใหม่และสุ่มลำดับข้อใหม่?')) startQuiz();
+}
+
+function renderEnd() {
+  updateStats();
+  document.getElementById('progFill').style.width = '100%';
+  const total = QUESTIONS.length;
+  const pct = Math.round((correctCount / total) * 100);
+  let msg, emoji;
+  if (pct >= 90) { msg = 'ยอดเยี่ยม! พร้อมสอบจริงแล้ว'; emoji = '🏆'; }
+  else if (pct >= 75) { msg = 'ดีมาก! เกือบพร้อมแล้ว'; emoji = '🎉'; }
+  else if (pct >= 60) { msg = 'ผ่านเกณฑ์ ฝึกเพิ่มอีกนิด'; emoji = '👍'; }
+  else if (pct >= 40) { msg = 'ยังต้องอ่านเพิ่ม สู้ๆ'; emoji = '📖'; }
+  else { msg = 'อ่านเนื้อหาใหม่ก่อนนะครับ'; emoji = '💪'; }
+  document.getElementById('main').innerHTML = `
+    <div class="end-screen">
+      <div style="font-size: 4rem;">${emoji}</div>
+      <h2>เสร็จสิ้น</h2>
+      <div class="end-score">${correctCount} / ${total}</div>
+      <div style="font-size: 1.5rem; color: #5b2a8a; margin-bottom: 8px;">${pct}%</div>
+      <div class="end-message">${msg}</div>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="restartQuiz()">ทำใหม่ (สุ่มข้อใหม่)</button>
+      </div>
+    </div>`;
+}
+
+startQuiz();
+</script>
+</body>
+</html>

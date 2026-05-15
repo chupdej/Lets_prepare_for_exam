@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCC Quiz — QBA Service & Operating Procedures</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Sarabun', sans-serif;
+    background: linear-gradient(135deg, #6e3b89 0%, #4a1f73 100%);
+    min-height: 100vh;
+    padding: 16px;
+    color: #1a1a1a;
+  }
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  header {
+    background: linear-gradient(135deg, #5b2a8a 0%, #3d1761 100%);
+    color: white;
+    padding: 24px 28px;
+  }
+  header h1 { font-size: 1.5rem; margin-bottom: 6px; }
+  header .sub { opacity: 0.85; font-size: 0.95rem; }
+  .stats {
+    display: flex;
+    gap: 16px;
+    padding: 16px 28px;
+    background: #faf7fc;
+    border-bottom: 1px solid #e9e2ef;
+    flex-wrap: wrap;
+  }
+  .stat {
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+  }
+  .stat .num {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #5b2a8a;
+  }
+  .stat .num.correct { color: #2e7d32; }
+  .stat .num.wrong { color: #c62828; }
+  .stat .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #666;
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+  .progress-wrap {
+    padding: 0 28px 16px;
+    background: #faf7fc;
+  }
+  .progress-bar {
+    height: 8px;
+    background: #e9e2ef;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #5b2a8a, #c294e3);
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+  main { padding: 28px; }
+  .question-card {
+    animation: slideIn 0.4s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .qnum {
+    display: inline-block;
+    background: #5b2a8a;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .qnum.hard { background: #d84315; }
+  .subj-tag {
+    display: inline-block;
+    background: #f0e6f6;
+    color: #5b2a8a;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+  .question {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: #1a1a1a;
+  }
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 2px solid #e0d6e8;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: #1a1a1a;
+  }
+  .choice:hover:not(:disabled) {
+    border-color: #5b2a8a;
+    background: #faf7fc;
+    transform: translateX(2px);
+  }
+  .choice:disabled { cursor: default; }
+  .choice .letter {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e9e2ef;
+    color: #5b2a8a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .choice.correct {
+    border-color: #2e7d32;
+    background: #e8f5e9;
+  }
+  .choice.correct .letter {
+    background: #2e7d32;
+    color: white;
+  }
+  .choice.wrong {
+    border-color: #c62828;
+    background: #ffebee;
+  }
+  .choice.wrong .letter {
+    background: #c62828;
+    color: white;
+  }
+  .feedback {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .feedback.show { display: block; }
+  .feedback.correct {
+    background: #e8f5e9;
+    border-left: 4px solid #2e7d32;
+    color: #1b5e20;
+  }
+  .feedback.wrong {
+    background: #ffebee;
+    border-left: 4px solid #c62828;
+    color: #b71c1c;
+  }
+  .feedback strong { display: block; margin-bottom: 4px; font-size: 0.95rem; }
+  .feedback .ans { font-size: 0.95rem; line-height: 1.5; }
+  .controls {
+    margin-top: 24px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  button.btn {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: #5b2a8a;
+    color: white;
+  }
+  .btn-primary:hover { background: #3d1761; transform: translateY(-1px); }
+  .btn-primary:disabled { background: #b8a4cc; cursor: not-allowed; transform: none; }
+  .btn-secondary {
+    background: #f0e6f6;
+    color: #5b2a8a;
+  }
+  .btn-secondary:hover { background: #e0d0ee; }
+  .end-screen {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .end-screen h2 { color: #5b2a8a; font-size: 1.8rem; margin-bottom: 12px; }
+  .end-score {
+    font-size: 4rem;
+    font-weight: 700;
+    color: #5b2a8a;
+    margin: 20px 0;
+  }
+  .end-message {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 24px;
+  }
+  .end-screen .controls { justify-content: center; }
+  footer {
+    text-align: center;
+    padding: 16px;
+    background: #faf7fc;
+    color: #888;
+    font-size: 0.8rem;
+    border-top: 1px solid #e9e2ef;
+  }
+  @media (max-width: 600px) {
+    body { padding: 8px; }
+    main { padding: 20px; }
+    header { padding: 20px; }
+    header h1 { font-size: 1.25rem; }
+    .question { font-size: 1rem; }
+    .choice { padding: 12px 14px; font-size: 0.92rem; }
+    .stats { padding: 12px 20px; gap: 8px; }
+    .stat .num { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>SCC Quiz — QBA Service & Operating Procedures</h1>
+    <div class="sub">วิชา Service and Operating Procedures — รวม <span id="totalQ">0</span> ข้อ</div>
+  </header>
+  <div class="stats">
+    <div class="stat"><div class="num" id="curNum">0</div><div class="label">ข้อปัจจุบัน</div></div>
+    <div class="stat"><div class="num correct" id="correctNum">0</div><div class="label">ถูก</div></div>
+    <div class="stat"><div class="num wrong" id="wrongNum">0</div><div class="label">ผิด</div></div>
+    <div class="stat"><div class="num" id="scoreNum">0%</div><div class="label">คะแนน</div></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+  </div>
+  <main id="main"></main>
+  <footer>เฉลยและคะแนนแสดงทันทีหลังเลือกแต่ละข้อ • ทำซ้ำได้ไม่จำกัด</footer>
+</div>
+
+<script>
+const QUESTIONS = [{"n": 1, "q": "According to A350-900 Working Routine for 10 CAs, which positions are responsible for C/CL? (Ref. A350-900 working routine)", "a": "1R, X1L, X2L and 2R", "b": "1R, X1L FWD, X2L and 2R", "c": "1R, X1L, X2L and 2L", "d": "1R, X1LAFT, X2L and 2R", "correct": "B"}, {"n": 2, "q": "According toA350-900 Working Routine for 9 CAs, which positions are responsible for C/CL? (Ref.A350-900 working routine)", "a": "1R, 2R, X1L FWD", "b": "1R, X1LAFT, X2L and 2L", "c": "1R, X1L FWD, X2L", "d": "1R, X1LAFT, X2L and 2R", "correct": "A"}, {"n": 3, "q": "According to B777-300ER (77B) Working Routine for 10 CAs, which positions are responsible for C/CL? (Ref.B777-300ER working routine)", "a": "1R, 2R, 3L, and X1L", "b": "1R, 2R, 3R, and 4L", "c": "1R, X1L, 2R and 2L", "d": "1R, 2R, X1L and 4L", "correct": "B"}, {"n": 4, "q": "According to B777-300ER (77B) Working Routine for 11 CAs, which positions are responsible for C/CL? (Ref.B777-300ER working routine)", "a": "1R, 2R, X1L and 3R", "b": "1R, 2R, X1L and X2L", "c": "1R, 2R, X1L AFT and 3L", "d": "1R, 2R, X1l FWD and 3R", "correct": "A"}, {"n": 5, "q": "According to B777-300ER Working Routine for 12 CAs, which positions are responsible for C/CL? (Ref.B777-300ER working routine)(77B)", "a": "1R, 2R, X1L, 3L and 3R", "b": "1R, 2R, X1L, X2L and 3R", "c": "1R, 2R, X1L, 2L and 3L", "d": "1R, 2R, X1LFWD and 3R", "correct": "B"}, {"n": 6, "q": "According to B777-300ER (77B) Working Routine for 13 CAs, which positions are responsible for C/CL? (Ref.B777-300ER working routine)", "a": "1R, 2R, X1L, X2L and 3R", "b": "1R, 2R, X1L, X1R and 2L", "c": "1R, 2R, X1L, 2L and 3R", "d": "1R, 2R, X1L, X1R and X2L", "correct": "D"}, {"n": 7, "q": "According to B787-8 Working Routine for 9 CAs, which positions are responsible for C/CL? (Ref.B787-8 working routine)", "a": "1R, 2R and 3L", "b": "1R, 2R and 3R", "c": "1R, 2R and X1L", "d": "1R, 2R and X1LFWD", "correct": "C"}, {"n": 8, "q": "According toB787-8 Working Routine for 10 CAs, what positions are responsible for C/CL? (Ref.B787-8 working routine)", "a": "1R, 2R and X1L", "b": "1R, 2R and 3R", "c": "1R, X1L and 3R", "d": "1R, X1L and X2L", "correct": "D"}, {"n": 9, "q": "According to B777-300ER (77Y) Working Routine for 14 CAs, which positions are responsible for C/CL? (Ref. 77Y working routine)", "a": "2R, 3L, 2LAFT, X2R and X2L", "b": "2R, 3L, 2LFWD, X2R and 3R", "c": "2R, 3R, 2LAFT, 2LFWD and X1R", "d": "2R, 2LAFT, 2LFWD, X2R and 3R", "correct": "B"}, {"n": 10, "q": "According to the A321 Working Routine for 6 CAs, which positions are responsible for C/CL? (Ref. A321 working routine)", "a": "1L, 1R", "b": "1L, XC", "c": "1R, XC", "d": "1R, 2R", "correct": "C"}, {"n": 11, "q": "Which document provides the specification information and recommended practice for each flight?", "a": "Supplementary Information", "b": "Route Specialities", "c": "Route Procedure", "d": "Crew Procedure", "correct": "B"}, {"n": 12, "q": "Which form is used for checking the amount of eau de toilette and hand lotion bottles?", "a": "Cabin Article Checklist", "b": "A/H kit and Amenities Checklist", "c": "Cabin Material Delivery on Board", "d": "In-flight Service Equipment Checklist", "correct": "C"}, {"n": 13, "q": "According to the B777-300ER Working Routine for 13 CAs (77Y), which passenger seat rows are assigned to position X2R for self-introduction, seat orientation, and journey discussion?", "a": "11K-15G and 15J-21J", "b": "11A-15D and 15B-21B", "c": "15K-21K", "d": "11A-15D and 11K-15G", "correct": "D"}, {"n": 14, "q": "According to the B777-300ER (77B) Working Routine for 12 CAs, which passenger seat rows are assigned to position X2L for self-introduction, seat orientation, and journey discussion?", "a": "11FJ-18FJ + 19K", "b": "11BE-18BE + 19D", "c": "11FJ-18FJ + 19G", "d": "11BE-18BE + 19A", "correct": "A"}, {"n": 15, "q": "Which function is responsible for SI Library?", "a": "In-flight Services Standard & Quality Control", "b": "In-flight Services Development & Quality Control", "c": "In-flight Services Standard & Quality Assurance", "d": "In-flight Services Development & Quality Assurance", "correct": "A"}, {"n": 16, "q": "Which function is responsible for working routine?", "a": "BKKQA-B", "b": "BKKQB-B", "c": "BKKQB-A", "d": "BKKQA-A", "correct": "C"}, {"n": 17, "q": "According to the announcement on privileges for passengers upgraded onboard (Ref: QB-A 09JUN25), which of the following statements is correct?", "a": "Passengers upgraded onboard are always entitled to all upgraded class privileges, including meals, lounge access, and frequent flyer points.", "b": "Passengers upgraded onboard will not be eligible for certain upgraded class privileges, but the amenity kit should be offered if available in stock.", "c": "Passengers upgraded onboard will not be offered an amenity kit under any circumstances.", "d": "An amenity kit is provided to the passenger upgraded onboard only on long-haul flights.", "correct": "B"}, {"n": 18, "q": "According to SI (APR 2025), on which routes will the SIRIVANNAVARI branded Amenities Kit be provided in C/CL service?", "a": "BKK-CDG-BKK, BKK-MXP-BKK, BKK-NRT-BKK, BKK-PVG-BKK", "b": "BKK-CDG-BKK, BKK-LHR-BKK, BKK-HND-BKK, BKK-PVG-BKK", "c": "BKK-MXP-BKK, BKK-NRT-BKK, BKK-HKG-BKK, BKK-PVG-BKK", "d": "BKK-CDG-BKK, BKK-MXP-BKK, BKK-LAX-BKK, BKK-NRT-BKK", "correct": "A"}, {"n": 19, "q": "According to ISOP in C/CL, CA must attend to passengers call within____. (Ref. ISOP Royal Silk Class)", "a": "10 Seconds.", "b": "15 Seconds.", "c": "20 Seconds.", "d": "30 Seconds.", "correct": "C"}, {"n": 20, "q": "According to ISOP in C/CL, CA must perform cabin walk around every ____ minutes. (Ref. ISOP Royal Silk Class)", "a": "15-20 Minutes.", "b": "30 Minutes.", "c": "45 Minutes.", "d": "More often.", "correct": "B"}, {"n": 21, "q": "About the Royal Silk welcome drink service, which answer is incorrect?", "a": "Champagne should be the first drink offered during the welcome service before take-off", "b": "Drip mat must not be placed on passenger seat in advance.", "c": "Always show label and mention the name of champagne.", "d": "Welcome drink is to be served before offering hot towels during boarding.", "correct": "D"}, {"n": 22, "q": "What should cabin crew do when a passenger orders an unfamiliar drink?", "a": "Inform passenger politely that we serve only popular drinks.", "b": "Inform passenger politely that the special request is served in Royal class only.", "c": "Ask politely for the ingredients. If not available, offer another kind of drink.", "d": "Inform CIC to solve the problem.", "correct": "C"}, {"n": 23, "q": "Which aircraft types offer Panasonic system Wi-Fi service? (Ref. SI Apr 2025)", "a": "77Y, 788, 789, 78W, 359, 35D", "b": "77Y, 788, 789, 359, 35B", "c": "77Y, 788, 789, 359, 35C", "d": "77Y, 788, 789, 359, 33C", "correct": "A"}, {"n": 24, "q": "CAs with bar box responsibility on flight to LHR must ___. (Ref. Route Specialities)", "a": "Complete C909 form with the details of SEALED CONTAINERS & SEAL NUMBERS. Seal their bars properly. Put the original of C909 inside the carts/units and attach the copy outside.", "b": "Complete C909 form with the details of SEALED CONTAINERS & SEAL NUMBERS. Seal their bars properly. Put the original of C909 outside the carts/units and attach the copy inside.", "c": "Complete C209 form with the details of SEALED CONTAINERS & SEAL NUMBERS. Seal their bars properly. Put the original of C209 inside the carts/units and attach the copy outside.", "d": "Complete C209 form with the details of SEALED CONTAINERS & SEAL NUMBERS. Seal their bars properly. Put the original of C209 outside the carts/units and attach the copy inside.", "correct": "C"}, {"n": 25, "q": "Which station required cabin spray prior to boarding? (Ref. Route Specialities)", "a": "CDG", "b": "LHR", "c": "SYD", "d": "HKG", "correct": "C"}, {"n": 26, "q": "Where can the most recent information regarding formalities, regulations,and procedures about in-flight services be found?", "a": "In-flight Services Operation Procedure.", "b": "Intercommunication Office Center.", "c": "Supplementary Information.", "d": "C/A Bulletin.", "correct": "C"}, {"n": 27, "q": "What are the 3-letter code for Chennai, Kolkata, Mumbai? (Route Specialities)", "a": "CHN, KOL, MUM", "b": "CHN, KKL, MUM", "c": "MAA, CCU, BOM", "d": "MAA, CCK, BOM", "correct": "C"}, {"n": 28, "q": "Special Security Arrangement is provided by______? (Ref. SI)", "a": "BKKJS", "b": "BKKD1", "c": "BKKDT", "d": "BKKDO", "correct": "B"}, {"n": 29, "q": "UTC at RGN is__? (Ref. Route Specialities )", "a": "7.00", "b": "6.30", "c": "6.15", "d": "5.30", "correct": "B"}, {"n": 30, "q": "Crew Procedure issued by ___.", "a": "BKKDO-A", "b": "BKKDQ-1", "c": "BKKQA-A", "d": "BKKOP-1", "correct": "A"}, {"n": 31, "q": "What is the custom allowance for crew members entering the Kingdom of Thailand? (Ref. Route Specialities)", "a": "200 cigarettes or 250 grams of tobacco and 1 litre of liquor.", "b": "250 cigarettes or 250 grams of tobacco and 1 litre of liquor.", "c": "200 cigarettes or 200 grams of tobacco and 1 litre of liquor.", "d": "250 cigarettes or 200 grams of tobacco and 1 litre of liquor.", "correct": "A"}, {"n": 32, "q": "Where can you find the Royal Silk \"L Size Service\" procedure? (Ref. MDM)", "a": "QB Service Handbook_Service Procedure Sizing Concept", "b": "QB-A Inflight Services Document_Service Procedure Sizing Concept", "c": "QB-B Traning Document_Service Procedure Sizing Concept", "d": "Cabin Common Document_Service Procedure Sizing Concept", "correct": "B"}, {"n": 33, "q": "According to the updated Medical Usage Record procedure (Ref: SI Mar 2025), what must cabin crew do after opening and using medicine in the Medical Pack?", "a": "Record all details into the Crew Kit Application.", "b": "Record all details into the Medical Usage Record application in Cabin Connect.", "c": "Submit a written report to IQSMS.", "d": "Record all details into the Medical Usage Record Form in the Medical Pack.", "correct": "B"}, {"n": 34, "q": "Which of the following assistance is not required for passengers with disability? (Ref. ISOP)", "a": "Assisting in stowing and retrieving carry - on items including mobility aids and other devices.", "b": "Assisting with the opening of food equipment and beverage packing.", "c": "CAs are not required to provide medical services.", "d": "Informing about the position of food and service equipment on the passengers table.", "correct": "C"}, {"n": 35, "q": "Which procedure in Royal Silk is incorrect? (Royal Silk L Size Service Procedure)", "a": "Arrange mixed nuts and dried fruits in small bowl.", "b": "Serve hot snack on small plate with fork and knife on cocktail napkin aside.", "c": "Lay the linen tablecloth before serving the mixed nuts and dried fruits", "d": "Use ABS tray to collect used bowl and plate by hand.", "correct": "B"}, {"n": 36, "q": "Which procedure in Royal Silk is incorrect for Lunch/Dinner? (Royal Silk Class L Size Service)", "a": "Drink service by service trolley or by hand.", "b": "Mixed nuts and hot snack/amuse bouche by hand.", "c": "Hot towel on small towel tray.", "d": "First course by cart.", "correct": "A"}, {"n": 37, "q": "Which procedure in Royal Silk is incorrect for Lunch/Dinner/Supper? (M size service)", "a": "Drink service by service trolley.", "b": "Snack sachet/mixed nuts & dried fruits by hand.", "c": "Offer hot towel on small towel tray.", "d": "First course by cart.", "correct": "C"}, {"n": 38, "q": "Which procedure is incorrect for Lunch/Dinner/Supper?(Ref. India Route)", "a": "Drink service with snack by service trolley.", "b": "Meal service by cart.", "c": "Bread service on first course cart or by hand", "d": "Hot beverage by hand.", "correct": "A"}, {"n": 39, "q": "What information must be submitted via Safety Manager 365 if the Royal Silk headphone is missing up to two? (SI)", "a": "Missing quanity and passenger nationality", "b": "Missing quantity, passenger name, and seat number", "c": "Missing quantity and passenger seat number", "d": "Missing quantity, passenger seat number and nationality", "correct": "B"}, {"n": 40, "q": "What drink does not belong to the Asian rice wine category?(Cabin Insight)", "a": "DEVANOM SATO LUEM PUA", "b": "DASSAI 39 JUNMAI DAIGINJO", "c": "HORANGI (TIGER) MAKGEOLLI", "d": "BELLINO", "correct": "D"}, {"n": 41, "q": "Which flight offers the size L service? (SI)", "a": "TG677", "b": "TG601", "c": "TG615", "d": "TG217", "correct": "A"}, {"n": 42, "q": "Which destination requires aircraft disinsection spraying after door-close?", "a": "NRT", "b": "CDG", "c": "SYD", "d": "ICN", "correct": "B"}, {"n": 43, "q": "Which of the following destinations is NOT included in the routes that will received the SIRIVANNAVARI Amenities Kit?", "a": "CDG", "b": "NRT", "c": "MXP", "d": "SYD", "correct": "D"}, {"n": 44, "q": "What menu is not a part of the \"Premium Asian Noodles\" project? (ref. Cabin Insight)", "a": "Boat Noodles, braised pork belly (°Î«¬‡µ’Î¬«‡√◊Õ∫‘πÀ¡Ÿ “¡™—Èπ)", "b": "Boat Noodles, sous vide beef short rib (°Î«¬‡µ’Î¬«‡√◊Õ∫‘π´’Ë‚§√ß‡π◊ÈÕ´Ÿ«’)", "c": "Pad Thai Noodles, jumbo crab, bleanded with rich crab roe and crab fat (º—¥‰∑¬Õ√ËÕ¬‡À“–§≈ÿ°¡—πªŸ·≈–‡π◊ÈÕªŸ)(√È“π∑‘æ¬Ï ¡—¬)", "d": "Pad Thai Noodles, prawn (√È“π∑‘æ¬Ï ¡—¬)", "correct": "D"}, {"n": 45, "q": "About the Royal Class welcome drink service, which answer is correct?", "a": "Champagne shall be offered as the first priority beverages.", "b": "The cabin crew may offer a selection of drinks as welcome drink, present on a silver tray.", "c": "Welcome drink is to be served before offering hot towels during boarding.", "d": "Preparing a selection of drinks on ABS tray in advance is permitted.", "correct": "A"}, {"n": 46, "q": "What is the main ingredient of DEVANOM?", "a": "Rice Variety Luem Pua Sticking Rice", "b": "Rice Variety Yamada Nishiki Rice", "c": "Unpolised Brown Rice", "d": "Sangyod Muang Phatthalung Rice", "correct": "A"}];
+const IS_HARD = false;
+
+let order = [];
+let cur = 0;
+let correctCount = 0;
+let wrongCount = 0;
+let answered = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  order = shuffle(QUESTIONS.map((_, i) => i));
+  cur = 0;
+  correctCount = 0;
+  wrongCount = 0;
+  document.getElementById('totalQ').textContent = QUESTIONS.length;
+  renderQuestion();
+}
+
+function updateStats() {
+  document.getElementById('curNum').textContent = cur + 1;
+  document.getElementById('correctNum').textContent = correctCount;
+  document.getElementById('wrongNum').textContent = wrongCount;
+  const total = correctCount + wrongCount;
+  const pct = total === 0 ? 0 : Math.round((correctCount / total) * 100);
+  document.getElementById('scoreNum').textContent = pct + '%';
+  document.getElementById('progFill').style.width = ((cur) / QUESTIONS.length * 100) + '%';
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderQuestion() {
+  if (cur >= QUESTIONS.length) { renderEnd(); return; }
+  answered = false;
+  const q = QUESTIONS[order[cur]];
+  updateStats();
+  const subjTag = (IS_HARD && q.subject) ? `<span class="subj-tag">${escapeHtml(q.subject.split('_')[0])}</span>` : '';
+  const qNumCls = IS_HARD ? 'qnum hard' : 'qnum';
+  const html = `
+    <div class="question-card">
+      <div>
+        <span class="${qNumCls}">ข้อ ${cur + 1} / ${QUESTIONS.length}</span>
+        ${subjTag}
+      </div>
+      <div class="question" style="margin-top: 12px;">${escapeHtml(q.q)}</div>
+      <div class="choices">
+        ${['A','B','C','D'].map(letter => `
+          <button class="choice" data-letter="${letter}" onclick="selectAnswer('${letter}')">
+            <span class="letter">${letter}</span>
+            <span>${escapeHtml(q[letter.toLowerCase()])}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <div class="controls">
+        <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>ข้อถัดไป →</button>
+        <button class="btn btn-secondary" onclick="restartQuiz()">เริ่มใหม่ (สุ่มใหม่)</button>
+      </div>
+    </div>`;
+  document.getElementById('main').innerHTML = html;
+}
+
+function selectAnswer(letter) {
+  if (answered) return;
+  answered = true;
+  const q = QUESTIONS[order[cur]];
+  const isCorrect = letter === q.correct;
+  if (isCorrect) correctCount++; else wrongCount++;
+  
+  // Disable all choices, mark correct one green
+  document.querySelectorAll('.choice').forEach(btn => {
+    btn.disabled = true;
+    const l = btn.dataset.letter;
+    if (l === q.correct) btn.classList.add('correct');
+    else if (l === letter) btn.classList.add('wrong');
+  });
+  
+  // Feedback box
+  const fb = document.getElementById('feedback');
+  const correctText = q[q.correct.toLowerCase()];
+  if (isCorrect) {
+    fb.className = 'feedback correct show';
+    fb.innerHTML = `<strong>✓ ถูกต้อง!</strong><div class="ans">คำตอบ: ${q.correct}. ${escapeHtml(correctText)}</div>`;
+  } else {
+    fb.className = 'feedback wrong show';
+    fb.innerHTML = `<strong>✗ ผิด</strong><div class="ans">คำตอบที่ถูกคือ: ${q.correct}. ${escapeHtml(correctText)}</div>`;
+  }
+  document.getElementById('nextBtn').disabled = false;
+  updateStats();
+}
+
+function nextQuestion() {
+  cur++;
+  renderQuestion();
+}
+
+function restartQuiz() {
+  if (confirm('เริ่มใหม่และสุ่มลำดับข้อใหม่?')) startQuiz();
+}
+
+function renderEnd() {
+  updateStats();
+  document.getElementById('progFill').style.width = '100%';
+  const total = QUESTIONS.length;
+  const pct = Math.round((correctCount / total) * 100);
+  let msg, emoji;
+  if (pct >= 90) { msg = 'ยอดเยี่ยม! พร้อมสอบจริงแล้ว'; emoji = '🏆'; }
+  else if (pct >= 75) { msg = 'ดีมาก! เกือบพร้อมแล้ว'; emoji = '🎉'; }
+  else if (pct >= 60) { msg = 'ผ่านเกณฑ์ ฝึกเพิ่มอีกนิด'; emoji = '👍'; }
+  else if (pct >= 40) { msg = 'ยังต้องอ่านเพิ่ม สู้ๆ'; emoji = '📖'; }
+  else { msg = 'อ่านเนื้อหาใหม่ก่อนนะครับ'; emoji = '💪'; }
+  document.getElementById('main').innerHTML = `
+    <div class="end-screen">
+      <div style="font-size: 4rem;">${emoji}</div>
+      <h2>เสร็จสิ้น</h2>
+      <div class="end-score">${correctCount} / ${total}</div>
+      <div style="font-size: 1.5rem; color: #5b2a8a; margin-bottom: 8px;">${pct}%</div>
+      <div class="end-message">${msg}</div>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="restartQuiz()">ทำใหม่ (สุ่มข้อใหม่)</button>
+      </div>
+    </div>`;
+}
+
+startQuiz();
+</script>
+</body>
+</html>
