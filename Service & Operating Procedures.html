@@ -376,7 +376,7 @@ function renderEnd() {
   else if (pct >= 80) { msg = 'ผ่านล่ะแม่ ดีจุยด้วย'; emoji = '🎉'; memeFile = 'meme-80.jpg'; }
   else { msg = 'อ่านใหม่ก่อนๆคุณแม่'; emoji = '💪'; memeFile = 'meme-0.jpg'; }
   const memeCaption = emoji + ' ' + msg;
-  const memeHtml = `<div class="meme-box"><img src="${memeFile}" alt="meme" onerror="this.parentElement.style.display='none'"><div class="meme-caption">${memeCaption}</div></div>`;
+  const memeHtml = `<div class="meme-box"><img src="${memeFile}" alt="meme" onerror="this.parentElement.style.display='none'"></div>`;
   
   const wrongHtml = wrongAnswers.length === 0
     ? `<div class="no-wrong">🌟 ตอบถูกทุกข้อ! ไม่มีข้อให้ทบทวน</div>`
@@ -403,11 +403,10 @@ function renderEnd() {
     <div class="end-screen">
       <div class="end-header">
         <div class="big-emoji">${emoji}</div>
-        <h2>ทำเสร็จแล้ว</h2>
+        <h2>${msg}</h2>
         <div class="name">${escapeHtml(userName)} • ใช้เวลา ${duration} วินาที</div>
         <div class="end-score">${correctCount} / ${total}</div>
         <div class="end-pct">${pct}%</div>
-        <div class="end-message">${msg}</div>
       </div>
       ${memeHtml}
       <div id="syncStatus" class="sync-status pending">⏳ กำลังบันทึกคะแนน...</div>
